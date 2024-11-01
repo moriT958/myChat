@@ -34,7 +34,7 @@ func (t *Thread) NumReplies(db DbDependency) (int, error) {
 }
 
 // get posts to a thread
-func (t *Thread) Posts(db DbDependency) ([]Post, error) {
+func (t *Thread) GetPosts(db DbDependency) ([]Post, error) {
 	var posts []Post
 	rows, err := db.Query("SELECT id, uuid, body, user_id, thread_id, created_at FROM posts WHERE thread_id = $1", t.Id)
 	if err != nil {
@@ -52,8 +52,8 @@ func (t *Thread) Posts(db DbDependency) ([]Post, error) {
 }
 
 // Get all threads in the database and returns it
-func (t *Thread) GetAll(db DbDependency) (threads []Thread, err error) {
-	rows, err := db.Query("SELECT id, uuid, topic, user_id, created_at FROM threads ORDER BY created_at DESC")
+func (m *Models) GetAllThreads() (threads []Thread, err error) {
+	rows, err := m.db.Query("SELECT id, uuid, topic, user_id, created_at FROM threads ORDER BY created_at DESC")
 	if err != nil {
 		return
 	}
@@ -69,9 +69,9 @@ func (t *Thread) GetAll(db DbDependency) (threads []Thread, err error) {
 }
 
 // Get a thread by the UUID
-func (t *Thread) ThreadByUUID(db DbDependency, uuid string) (conv Thread, err error) {
+func (m *Models) GetThreadByUUID(uuid string) (conv Thread, err error) {
 	conv = Thread{}
-	err = db.QueryRow("SELECT id, uuid, topic, user_id, created_at FROM threads WHERE uuid = $1", uuid).
+	err = m.db.QueryRow("SELECT id, uuid, topic, user_id, created_at FROM threads WHERE uuid = $1", uuid).
 		Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt)
 	return
 }
