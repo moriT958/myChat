@@ -1,7 +1,6 @@
 package models
 
 import (
-	"database/sql"
 	"time"
 )
 
@@ -14,7 +13,7 @@ type Session struct {
 }
 
 // Check if session is valid in the database
-func (s *Session) Check(db *sql.DB) (bool, error) {
+func (s *Session) Check(db DbDependency) (bool, error) {
 	err := db.QueryRow("SELECT id, uuid, email, user_id, created_at FROM sessions WHERE uuid = $1", s.Uuid).
 		Scan(&s.Id, &s.Uuid, &s.Email, &s.UserId, &s.CreatedAt)
 	if err != nil {
@@ -27,7 +26,7 @@ func (s *Session) Check(db *sql.DB) (bool, error) {
 }
 
 // Delete session from database
-func (s *Session) DeleteByUUID(db *sql.DB) error {
+func (s *Session) DeleteByUUID(db DbDependency) error {
 	q := "DELETE FROM sessions WHERE uuid = $1"
 	stmt, err := db.Prepare(q)
 	if err != nil {
@@ -54,9 +53,9 @@ func (s *Session) GetUser(db DbDependency) (User, error) {
 }
 
 // Delete all sessions from database
-func (s *Session) DeleteAll(db DbDependency) error {
+func (m *Models) DeleteAllSessions() error {
 	q := "DELETE FROM sessions"
-	_, err := db.Exec(q)
+	_, err := m.db.Exec(q)
 	if err != nil {
 		return err
 	}

@@ -2,9 +2,9 @@
 
 {{ range . }}
 <div class="panel">
-  <div class="panel-header">{{ .Topic }}</div>
+  <div class="panel-header">{{ .Id }}</div>
   <div class="panel-body">
-    Started by {{ .User.Name }} - {{ .CreatedAtDate }} - {{ .NumReplies }} posts.
+    Started by {{ .Name }} - {{ .Email }}.
     <div class="pull-right">
       <a href="/thread/read?id={{ .Uuid }}">Read more</a>
     </div>
