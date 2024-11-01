@@ -2,10 +2,12 @@ package main
 
 import (
 	"html/template"
+	"log"
 	"net/http"
 )
 
 func index(w http.ResponseWriter, r *http.Request) {
+
 	files := []string{
 		"templates/layout.html",
 		"templates/public.navbar.html",
@@ -13,9 +15,12 @@ func index(w http.ResponseWriter, r *http.Request) {
 	}
 
 	templates := template.Must(template.ParseFiles(files...))
-	templates.ExecuteTemplate(w, "layout", nil)
+	err := templates.ExecuteTemplate(w, "layout", nil)
+	if err != nil {
+		log.Println((err))
+	}
 }
 
-func err(w http.ResponseWriter, r *http.Request) {
+func errHandler(w http.ResponseWriter, r *http.Request) {
 
 }
