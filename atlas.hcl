@@ -4,11 +4,11 @@ variable "database_url" {
 }
 
 env "dev" {
-    src = "file://data/schema.hcl"
+    src = "file://database/schema.hcl"
     url = var.database_url
     dev = "docker://postgres/15/dev?search_path=public"
 
     migration {
-        dir = "file://data/migrations"
+        dir = "file://database/migrations"
     }
 }
