@@ -30,7 +30,7 @@ func (t *Thread) NumReplies(m Models) (int, error) {
 		}
 	}
 	rows.Close()
-	return num, nil
+	return num, err
 }
 
 // get posts to a thread
@@ -56,5 +56,6 @@ func (t *Thread) GetUser(m Models) (user User) {
 	user = User{}
 	m.db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", t.UserId).
 		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
+
 	return
 }

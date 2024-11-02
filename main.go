@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"myChat/models"
-	routers "myChat/router"
+	"myChat/routers"
 	"net/http"
 	"time"
 
