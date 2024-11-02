@@ -1,11 +1,7 @@
 package models
 
 import (
-	"crypto/rand"
-	"crypto/sha1"
 	"database/sql"
-	"fmt"
-	"log"
 )
 
 type DbDependency interface {
@@ -23,26 +19,86 @@ func NewModels(db DbDependency) *Models {
 	return &Models{db: db}
 }
 
-// create a random UUID with from RFC 4122
-// adapted from http://github.com/nu7hatch/gouuid
-func createUUID() (uuid string) {
-	u := new([16]byte)
-	_, err := rand.Read(u[:])
+// Delete all sessions from database
+func (m *Models) DeleteAllSessions() error {
+	q := "DELETE FROM sessions"
+	_, err := m.db.Exec(q)
 	if err != nil {
-		log.Fatalln("Cannot generate UUID", err)
+		return err
 	}
+	return nil
+}
 
-	// 0x40 is reserved variant from RFC 4122
-	u[8] = (u[8] | 0x40) & 0x7F
-	// Set the four most significant bits (bits 12 through 15) of the
-	// time_hi_and_version field to the 4-bit version number.
-	u[6] = (u[6] & 0xF) | (0x4 << 4)
-	uuid = fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:])
+// Get all threads in the database and returns it
+func (m *Models) GetAllThreads() (threads []Thread, err error) {
+	rows, err := m.db.Query("SELECT id, uuid, topic, user_id, created_at FROM threads ORDER BY created_at DESC")
+	if err != nil {
+		return
+	}
+	for rows.Next() {
+		conv := Thread{}
+		if err = rows.Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt); err != nil {
+			return
+		}
+		threads = append(threads, conv)
+	}
+	rows.Close()
 	return
 }
 
-// hash plaintext with SHA-1
-func Encrypt(plaintext string) (cryptext string) {
-	cryptext = fmt.Sprintf("%x", sha1.Sum([]byte(plaintext)))
+// Get a thread by the UUID
+func (m *Models) GetThreadByUUID(uuid string) (conv Thread, err error) {
+	conv = Thread{}
+	err = m.db.QueryRow("SELECT id, uuid, topic, user_id, created_at FROM threads WHERE uuid = $1", uuid).
+		Scan(&conv.Id, &conv.Uuid, &conv.Topic, &conv.UserId, &conv.CreatedAt)
+	return
+}
+
+// Delete all users from database
+func (m *Models) DeleteAllUsers() (err error) {
+	q := "DELETE FROM users"
+	_, err = m.db.Exec(q)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Get all users in the database and returns it
+func (m *Models) GetAllUsers() (users []User, err error) {
+	rows, err := m.db.Query("SELECT id, uuid, name, email, password, created_at FROM users")
+	if err != nil {
+		return
+	}
+	for rows.Next() {
+		user := User{}
+		if err = rows.Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt); err != nil {
+			return
+		}
+		users = append(users, user)
+	}
+	rows.Close()
+	return
+}
+
+// Get a single user given the email
+func (m *Models) GetUserByEmail(email string) (user User, err error) {
+	user = User{}
+	err = m.db.QueryRow("SELECT id, uuid, name, email, password, created_at FROM users WHERE email = $1", email).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	if err != nil {
+		return
+	}
+	return
+}
+
+// Get a single user given the UUID
+func (m *Models) GetUserByUUID(uuid string) (user User, err error) {
+	user = User{}
+	err = m.db.QueryRow("SELECT id, uuid, name, email, password, created_at FROM users WHERE uuid = $1", uuid).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	if err != nil {
+		return
+	}
 	return
 }
