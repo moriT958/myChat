@@ -13,8 +13,8 @@ type Session struct {
 }
 
 // Check if session is valid in the database
-func (s *Session) Check(db DbDependency) (bool, error) {
-	err := db.QueryRow("SELECT id, uuid, email, user_id, created_at FROM sessions WHERE uuid = $1", s.Uuid).
+func (s *Session) Check(m Models) (bool, error) {
+	err := m.db.QueryRow("SELECT id, uuid, email, user_id, created_at FROM sessions WHERE uuid = $1", s.Uuid).
 		Scan(&s.Id, &s.Uuid, &s.Email, &s.UserId, &s.CreatedAt)
 	if err != nil {
 		return false, err
@@ -26,9 +26,9 @@ func (s *Session) Check(db DbDependency) (bool, error) {
 }
 
 // Delete session from database
-func (s *Session) DeleteByUUID(db DbDependency) error {
+func (s *Session) Delete(m Models) error {
 	q := "DELETE FROM sessions WHERE uuid = $1"
-	stmt, err := db.Prepare(q)
+	stmt, err := m.db.Prepare(q)
 	if err != nil {
 		return err
 	}
@@ -42,22 +42,12 @@ func (s *Session) DeleteByUUID(db DbDependency) error {
 }
 
 // Get the user from the session
-func (s *Session) GetUser(db DbDependency) (User, error) {
+func (s *Session) GetUser(m Models) (User, error) {
 	usr := User{}
-	err := db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", s.UserId).
+	err := m.db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", s.UserId).
 		Scan(&usr.Id, &usr.Uuid, &usr.Name, &usr.Email, &usr.CreatedAt)
 	if err != nil {
 		return usr, err
 	}
 	return usr, nil
-}
-
-// Delete all sessions from database
-func (m *Models) DeleteAllSessions() error {
-	q := "DELETE FROM sessions"
-	_, err := m.db.Exec(q)
-	if err != nil {
-		return err
-	}
-	return nil
 }

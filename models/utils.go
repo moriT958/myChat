@@ -3,25 +3,9 @@ package models
 import (
 	"crypto/rand"
 	"crypto/sha1"
-	"database/sql"
 	"fmt"
 	"log"
 )
-
-type DbDependency interface {
-	Query(query string, args ...any) (*sql.Rows, error)
-	QueryRow(query string, args ...any) *sql.Row
-	Exec(query string, args ...any) (sql.Result, error)
-	Prepare(query string) (*sql.Stmt, error)
-}
-
-type Models struct {
-	db DbDependency
-}
-
-func NewModels(db DbDependency) *Models {
-	return &Models{db: db}
-}
 
 // create a random UUID with from RFC 4122
 // adapted from http://github.com/nu7hatch/gouuid
