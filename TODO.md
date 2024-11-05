@@ -4,6 +4,7 @@
 
 - 認証機能完成させる(bugの修正)
 - repositoryから、modelをserviceに切り出す.
+  - serviceにはユーザ目線で見た機能、repositoryはDB操作をまとめる。
 - スタイル当てる
 - CI
 
