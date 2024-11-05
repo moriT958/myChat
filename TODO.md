@@ -3,6 +3,7 @@
 ## MUST
 
 - 認証機能完成させる(bugの修正)
+- repositoryから、modelをserviceに切り出す.
 - スタイル当てる
 - CI
 
