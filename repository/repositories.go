@@ -10,16 +10,6 @@ func NewRepository(db *sql.DB) *Repository {
 	return &Repository{db: db}
 }
 
-type RepositoryInterface interface {
-	GetAllThreads() (threads []Thread, err error)
-	GetThreadByUUID(uuid string) (conv Thread, err error)
-	DeleteAllSessions() error
-	DeleteAllUsers() (err error)
-	GetAllUsers() (users []User, err error)
-	GetUserByEmail(email string) (user User, err error)
-	GetUserByUUID(uuid string) (user User, err error)
-}
-
 // Get all threads in the database and returns it
 func (r *Repository) GetAllThreads() (threads []Thread, err error) {
 	rows, err := r.db.Query("SELECT id, uuid, topic, user_id, created_at FROM threads ORDER BY created_at DESC")

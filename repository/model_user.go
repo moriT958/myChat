@@ -53,7 +53,8 @@ func (u *User) Create() (err error) {
 	defer stmt.Close()
 
 	// use QueryRow to return a row and scan the returned id into the User struct
-	err = stmt.QueryRow(createUUID(), u.Name, u.Email, Encrypt(u.Password), time.Now()).Scan(&u.Id, &u.Uuid, &u.CreatedAt)
+	err = stmt.QueryRow(createUUID(), u.Name, u.Email, Encrypt(u.Password), time.Now()).
+		Scan(&u.Id, &u.Uuid, &u.CreatedAt)
 	if err != nil {
 		return
 	}

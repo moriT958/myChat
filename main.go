@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"myChat/repository"
-	"myChat/routers"
 	"net/http"
 	"time"
 
@@ -23,21 +22,12 @@ func main() {
 	db := repository.GetDB()
 	defer db.Close()
 
-	repo := repository.NewRepository(db)
-	r := routers.NewRouter(*repo) // routers層
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", r.Index)         // index
-	mux.HandleFunc("/err", r.ErrHandler) // err
-
-	// 静的ファイルの配信
-	files := http.FileServer(http.Dir("public"))
-	mux.Handle("/static/", http.StripPrefix("/static/", files))
+	rt := NewRouter(db)
 
 	// サーバ起動設定
 	s := http.Server{
 		Addr:           conf.Address,
-		Handler:        mux,
+		Handler:        rt,
 		ReadTimeout:    time.Duration(conf.ReadTimeout * int64(time.Second)),
 		WriteTimeout:   time.Duration(conf.WriteTimeout * int64(time.Second)),
 		MaxHeaderBytes: 1 << 20,
