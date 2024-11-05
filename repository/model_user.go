@@ -1,4 +1,4 @@
-package models
+package repository
 
 import (
 	"time"
@@ -14,9 +14,10 @@ type User struct {
 }
 
 // Create a new session for an existing user
-func (u *User) CreateSession(m Models) (session Session, err error) {
+func (u *User) CreateSession() (session Session, err error) {
+	db = GetDB()
 	q := "INSERT INTO sessions (uuid, email, user_id, created_at) VALUES ($1, $2, $3, $4) RETURNING id, uuid, email, user_id, created_at"
-	stmt, err := m.db.Prepare(q)
+	stmt, err := db.Prepare(q)
 	if err != nil {
 		return
 	}
@@ -30,27 +31,30 @@ func (u *User) CreateSession(m Models) (session Session, err error) {
 }
 
 // Get the session for an existing user
-func (u *User) GetSession(m Models) (session Session, err error) {
+func (u *User) GetSession() (session Session, err error) {
 	session = Session{}
-	err = m.db.QueryRow("SELECT id, uuid, email, user_id, created_at FROM sessions WHERE user_id = $1", u.Id).
+	db = GetDB()
+	err = db.QueryRow("SELECT id, uuid, email, user_id, created_at FROM sessions WHERE user_id = $1", u.Id).
 		Scan(&session.Id, &session.Uuid, &session.Email, &session.UserId, &session.CreatedAt)
 	return
 }
 
 // Create a new user, save user info into the database
-func (u *User) Create(m Models) (err error) {
+func (u *User) Create() (err error) {
 	// Postgres does not automatically return the last insert id, because it would be wrong to assume
 	// you're always using a sequence.You need to use the RETURNING keyword in your insert to get this
 	// information from postgres.
+	db = GetDB()
 	q := "INSERT INTO users (uuid, name, email, password, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id, uuid, created_at"
-	stmt, err := m.db.Prepare(q)
+	stmt, err := db.Prepare(q)
 	if err != nil {
 		return
 	}
 	defer stmt.Close()
 
 	// use QueryRow to return a row and scan the returned id into the User struct
-	err = stmt.QueryRow(createUUID(), u.Name, u.Email, Encrypt(u.Password), time.Now()).Scan(&u.Id, &u.Uuid, &u.CreatedAt)
+	err = stmt.QueryRow(createUUID(), u.Name, u.Email, Encrypt(u.Password), time.Now()).
+		Scan(&u.Id, &u.Uuid, &u.CreatedAt)
 	if err != nil {
 		return
 	}
@@ -58,9 +62,10 @@ func (u *User) Create(m Models) (err error) {
 }
 
 // Delete user from database
-func (u *User) Delete(m Models) (err error) {
+func (u *User) Delete() (err error) {
+	db = GetDB()
 	q := "DELETE FROM users WHERE id = $1"
-	stmt, err := m.db.Prepare(q)
+	stmt, err := db.Prepare(q)
 	if err != nil {
 		return
 	}
@@ -74,9 +79,10 @@ func (u *User) Delete(m Models) (err error) {
 }
 
 // Update user information in the database
-func (u *User) Update(m Models) (err error) {
+func (u *User) Update() (err error) {
+	db = GetDB()
 	q := "UPDATE users SET name = $2, email = $3 WHERE id = $1"
-	stmt, err := m.db.Prepare(q)
+	stmt, err := db.Prepare(q)
 	if err != nil {
 		return
 	}
@@ -90,9 +96,10 @@ func (u *User) Update(m Models) (err error) {
 }
 
 // Create a new thread
-func (u *User) CreateThread(m Models, topic string) (conv Thread, err error) {
+func (u *User) CreateThread(topic string) (conv Thread, err error) {
+	db = GetDB()
 	q := "INSERT INTO threads (uuid, topic, user_id, created_at) VALUES ($1, $2, $3, $4) RETURNING id, uuid, topic, user_id, created_at"
-	stmt, err := m.db.Prepare(q)
+	stmt, err := db.Prepare(q)
 	if err != nil {
 		return
 	}
@@ -106,9 +113,10 @@ func (u *User) CreateThread(m Models, topic string) (conv Thread, err error) {
 }
 
 // Create a new post to a thread
-func (u *User) CreatePost(m Models, conv Thread, body string) (post Post, err error) {
+func (u *User) CreatePost(conv Thread, body string) (post Post, err error) {
+	db = GetDB()
 	q := "INSERT INTO posts (uuid, body, user_id, thread_id, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id, uuid, body, user_id, thread_id, created_at"
-	stmt, err := m.db.Prepare(q)
+	stmt, err := db.Prepare(q)
 	if err != nil {
 		return
 	}

@@ -1,4 +1,4 @@
-package models
+package repository
 
 import (
 	"time"
@@ -19,9 +19,9 @@ func (p *Post) CreatedAtStr() string {
 }
 
 // Get the user who wrote the post
-func (p *Post) GetUser(m Models) User {
-	user := User{}
-	m.db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", p.UserId).
-		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
-	return user
+func (p *Post) GetUser() (usr User) {
+	db = GetDB()
+	db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", p.UserId).
+		Scan(&usr.Id, &usr.Uuid, &usr.Name, &usr.Email, &usr.CreatedAt)
+	return usr
 }
