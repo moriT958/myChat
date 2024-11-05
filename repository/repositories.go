@@ -10,6 +10,8 @@ func NewRepository(db *sql.DB) *Repository {
 	return &Repository{db: db}
 }
 
+// Get and Delete functions below
+
 // Get all threads in the database and returns it
 func (r *Repository) GetAllThreads() (threads []Thread, err error) {
 	rows, err := r.db.Query("SELECT id, uuid, topic, user_id, created_at FROM threads ORDER BY created_at DESC")

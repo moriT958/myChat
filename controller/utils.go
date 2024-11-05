@@ -8,27 +8,30 @@ import (
 	"net/http"
 )
 
-func generateHTML(writer http.ResponseWriter, data interface{}, filenames ...string) {
+// render HTML file responce
+func renderHTML(w http.ResponseWriter, data interface{}, filenames ...string) {
 	var files []string
 	for _, file := range filenames {
 		files = append(files, fmt.Sprintf("templates/%s.html", file))
 	}
 
 	templates := template.Must(template.ParseFiles(files...))
-	templates.ExecuteTemplate(writer, "layout", data)
+	templates.ExecuteTemplate(w, "layout", data)
 }
 
 // Checks if the user is logged in and has a session, if not err is not nil
-func session(req *http.Request) (sess repository.Session, err error) {
+func session(req *http.Request) (repository.Session, error) {
 	cookie, err := req.Cookie("_cookie")
 	if err != nil {
-		return
+		return repository.Session{}, err
 	}
 
-	sess = repository.Session{Uuid: cookie.Value}
-	if ok, _ := sess.Check(); !ok {
-		err = errors.New("invalid session")
+	sess := repository.Session{Uuid: cookie.Value}
+	if ok, err := sess.Check(); err != nil {
+		return repository.Session{}, err
+	} else if !ok {
+		return repository.Session{}, errors.New("invalid session")
 	}
 
-	return
+	return sess, nil
 }
