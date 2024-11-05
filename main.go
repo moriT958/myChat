@@ -1,9 +1,8 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	"myChat/models"
+	"myChat/repository"
 	"myChat/routers"
 	"net/http"
 	"time"
@@ -15,22 +14,17 @@ const (
 	VERSION = "0.1"
 )
 
-var (
-	config Config
-	db     *sql.DB
-)
-
 func main() {
 	// 設定のロード
 	loadConfig()
-	fmt.Println("myChat", VERSION, "started at", config.Address)
+	fmt.Println("myChat", VERSION, "started at", conf.Address)
 
 	// データベースの取得
-	connectDb()
+	db := repository.GetDB()
 	defer db.Close()
 
-	m := models.NewModels(db)  // models層
-	r := routers.NewRouter(*m) // routers層
+	repo := repository.NewRepository(db)
+	r := routers.NewRouter(*repo) // routers層
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", r.Index)         // index
@@ -42,10 +36,10 @@ func main() {
 
 	// サーバ起動設定
 	s := http.Server{
-		Addr:           config.Address,
+		Addr:           conf.Address,
 		Handler:        mux,
-		ReadTimeout:    time.Duration(config.ReadTimeout * int64(time.Second)),
-		WriteTimeout:   time.Duration(config.WriteTimeout * int64(time.Second)),
+		ReadTimeout:    time.Duration(conf.ReadTimeout * int64(time.Second)),
+		WriteTimeout:   time.Duration(conf.WriteTimeout * int64(time.Second)),
 		MaxHeaderBytes: 1 << 20,
 	}
 	s.ListenAndServe()
