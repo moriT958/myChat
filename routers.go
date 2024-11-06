@@ -23,7 +23,7 @@ func NewRouter(db *sql.DB) (mux *http.ServeMux) {
 	mux.HandleFunc("POST /signup_account", ctlr.SignupPostHandler)
 	mux.HandleFunc("POST /authenticate", ctlr.AuthenticateHandler)
 
-	// thread handlers difined in thread.go
+	// // thread handlers difined in thread.go
 	mux.HandleFunc("GET /threads/new", ctlr.ThreadFormHandler)
 	mux.HandleFunc("POST /thread/create", ctlr.CreateThreadHandler)
 	mux.HandleFunc("POST /thread/post", ctlr.PostThreadHandler)
