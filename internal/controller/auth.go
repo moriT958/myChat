@@ -1,15 +1,17 @@
 package controller
 
 import (
+	"errors"
 	"log"
-	"myChat/repository"
+	"myChat/internal/repository"
+	"myChat/pkg/utils"
 	"net/http"
 )
 
 // GET /signup
 // Show the signup page
 func (ctlr *Controller) SignupFormHandler(w http.ResponseWriter, _ *http.Request) {
-	renderHTML(w, nil, "login.layout", "public.navbar", "signup")
+	utils.RenderHTML(w, nil, "login.layout", "public.navbar", "signup")
 }
 
 // POST /signup_account
@@ -33,7 +35,7 @@ func (ctlr *Controller) SignupPostHandler(w http.ResponseWriter, req *http.Reque
 // GET /login
 // login form page
 func (ctlr *Controller) LoginFormHandler(w http.ResponseWriter, _ *http.Request) {
-	renderHTML(w, nil, "login.layout", "public.navbar", "login")
+	utils.RenderHTML(w, nil, "login.layout", "public.navbar", "login")
 }
 
 // POST /authenticate
@@ -44,7 +46,7 @@ func (ctlr *Controller) AuthenticateHandler(w http.ResponseWriter, req *http.Req
 	if err != nil {
 		log.Println(err, "Cannot find user")
 	}
-	if user.Password == repository.Encrypt(req.PostFormValue("password")) {
+	if user.Password == utils.Encrypt(req.PostFormValue("password")) {
 		session, err := user.CreateSession()
 		if err != nil {
 			log.Println(err, "Cannot create session")
@@ -72,4 +74,21 @@ func (ctlr *Controller) LogoutHandler(w http.ResponseWriter, req *http.Request) 
 		session.Delete()
 	}
 	http.Redirect(w, req, "/", http.StatusFound)
+}
+
+// Checks if the user is logged in and has a session, if not err is not nil
+func (ctlr Controller) CheckSession(req *http.Request) (repository.Session, error) {
+	cookie, err := req.Cookie("_cookie")
+	if err != nil {
+		return repository.Session{}, err
+	}
+
+	sess := repository.Session{Uuid: cookie.Value}
+	if ok, err := sess.Check(); err != nil {
+		return repository.Session{}, err
+	} else if !ok {
+		return repository.Session{}, errors.New("invalid session")
+	}
+
+	return sess, nil
 }

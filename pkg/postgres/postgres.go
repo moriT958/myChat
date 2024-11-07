@@ -1,4 +1,4 @@
-package repository
+package postgres
 
 import (
 	"database/sql"
@@ -12,7 +12,7 @@ var (
 	db   *sql.DB
 )
 
-func GetDB() *sql.DB {
+func Connect() *sql.DB {
 	once.Do(func() {
 		var err error
 		dsn := os.Getenv("DATABASE_URL")

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"myChat/pkg/postgres"
 	"time"
 )
 
@@ -14,7 +15,7 @@ type Session struct {
 
 // Check if session is valid in the database
 func (s *Session) Check() (res bool, err error) {
-	db = GetDB()
+	db := postgres.Connect()
 	err = db.QueryRow("SELECT id, uuid, email, user_id, created_at FROM sessions WHERE uuid = $1", s.Uuid).
 		Scan(&s.Id, &s.Uuid, &s.Email, &s.UserId, &s.CreatedAt)
 	if err != nil {
@@ -29,7 +30,7 @@ func (s *Session) Check() (res bool, err error) {
 // Delete session from database
 func (s *Session) Delete() (err error) {
 	q := "DELETE FROM sessions WHERE uuid = $1"
-	db = GetDB()
+	db := postgres.Connect()
 	stmt, err := db.Prepare(q)
 	if err != nil {
 		return
@@ -45,7 +46,7 @@ func (s *Session) Delete() (err error) {
 
 // Get the user from the session
 func (s *Session) GetUser() (usr User, err error) {
-	db = GetDB()
+	db := postgres.Connect()
 	err = db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", s.UserId).
 		Scan(&usr.Id, &usr.Uuid, &usr.Name, &usr.Email, &usr.CreatedAt)
 	if err != nil {

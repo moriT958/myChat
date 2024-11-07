@@ -1,15 +1,28 @@
-package repository
+package utils
 
 import (
 	"crypto/rand"
 	"crypto/sha1"
 	"fmt"
+	"html/template"
 	"log"
+	"net/http"
 )
+
+// render HTML file responce
+func RenderHTML(w http.ResponseWriter, data interface{}, filenames ...string) {
+	var files []string
+	for _, file := range filenames {
+		files = append(files, fmt.Sprintf("web/templates/%s.html", file))
+	}
+
+	templates := template.Must(template.ParseFiles(files...))
+	templates.ExecuteTemplate(w, "layout", data)
+}
 
 // create a random UUID with from RFC 4122
 // adapted from http://github.com/nu7hatch/gouuid
-func createUUID() (uuid string) {
+func CreateUUID() (uuid string) {
 	u := new([16]byte)
 	_, err := rand.Read(u[:])
 	if err != nil {

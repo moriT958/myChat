@@ -3,6 +3,7 @@ package controller
 import (
 	"fmt"
 	"log"
+	"myChat/pkg/utils"
 	"net/http"
 	"strings"
 )
@@ -10,18 +11,18 @@ import (
 // GET /threads/new
 // Show the new thread form page
 func (ctlr Controller) ThreadFormHandler(w http.ResponseWriter, req *http.Request) {
-	_, err := session(req)
+	_, err := ctlr.CheckSession(req)
 	if err != nil {
 		http.Redirect(w, req, "/login", http.StatusFound)
 	} else {
-		renderHTML(w, nil, "layout", "private.navbar", "new.thread")
+		utils.RenderHTML(w, nil, "layout", "private.navbar", "new.thread")
 	}
 }
 
 // POST /thread/create
 // Create the user account
 func (ctlr Controller) CreateThreadHandler(w http.ResponseWriter, req *http.Request) {
-	sess, err := session(req)
+	sess, err := ctlr.CheckSession(req)
 	if err != nil {
 		http.Redirect(w, req, "/login", http.StatusFound)
 	} else {
@@ -31,7 +32,7 @@ func (ctlr Controller) CreateThreadHandler(w http.ResponseWriter, req *http.Requ
 		}
 		user, err := sess.GetUser()
 		if err != nil {
-			log.Println(err, "Cannot get user from session")
+			log.Println(err, "Cannot get user from utils.Session")
 		}
 		topic := req.PostFormValue("topic")
 		if _, err := user.CreateThread(topic); err != nil {
@@ -51,11 +52,11 @@ func (ctlr Controller) ReadThreadHandler(w http.ResponseWriter, req *http.Reques
 		url := []string{"/err?msg=", "Cannot read thread"}
 		http.Redirect(w, req, strings.Join(url, ""), http.StatusFound)
 	} else {
-		_, err := session(req)
+		_, err := ctlr.CheckSession(req)
 		if err != nil {
-			renderHTML(w, &thread, "layout", "public.navbar", "public.thread")
+			utils.RenderHTML(w, &thread, "layout", "public.navbar", "public.thread")
 		} else {
-			renderHTML(w, &thread, "layout", "private.navbar", "private.thread")
+			utils.RenderHTML(w, &thread, "layout", "private.navbar", "private.thread")
 		}
 	}
 }
@@ -63,7 +64,7 @@ func (ctlr Controller) ReadThreadHandler(w http.ResponseWriter, req *http.Reques
 // POST /thread/post
 // Create the post
 func (ctlr Controller) PostThreadHandler(w http.ResponseWriter, req *http.Request) {
-	sess, err := session(req)
+	sess, err := ctlr.CheckSession(req)
 	if err != nil {
 		http.Redirect(w, req, "/login", http.StatusFound)
 	} else {

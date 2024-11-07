@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"myChat/pkg/postgres"
 	"time"
 )
 
@@ -20,7 +21,7 @@ func (p *Post) CreatedAtStr() string {
 
 // Get the user who wrote the post
 func (p *Post) GetUser() (usr User) {
-	db = GetDB()
+	db := postgres.Connect()
 	db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", p.UserId).
 		Scan(&usr.Id, &usr.Uuid, &usr.Name, &usr.Email, &usr.CreatedAt)
 	return usr

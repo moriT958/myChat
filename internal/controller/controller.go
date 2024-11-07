@@ -1,7 +1,7 @@
 package controller
 
 import (
-	"myChat/repository"
+	"myChat/internal/repository"
 )
 
 type Controller struct {

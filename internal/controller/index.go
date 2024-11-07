@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"myChat/pkg/utils"
 	"net/http"
 	"strings"
 )
@@ -14,11 +15,11 @@ func (ctlr *Controller) Index(w http.ResponseWriter, req *http.Request) {
 		url := []string{"/err?msg=", errMsg}
 		http.Redirect(w, req, strings.Join(url, ""), http.StatusFound)
 	} else {
-		_, err := session(req)
+		_, err := ctlr.CheckSession(req)
 		if err != nil {
-			renderHTML(w, threads, "layout", "public.navbar", "index")
+			utils.RenderHTML(w, threads, "layout", "public.navbar", "index")
 		} else {
-			renderHTML(w, threads, "layout", "private.navbar", "index")
+			utils.RenderHTML(w, threads, "layout", "private.navbar", "index")
 		}
 	}
 }
@@ -27,10 +28,10 @@ func (ctlr *Controller) Index(w http.ResponseWriter, req *http.Request) {
 // error page
 func (ctlr *Controller) ErrHandler(w http.ResponseWriter, req *http.Request) {
 	vals := req.URL.Query()
-	_, err := session(req)
+	_, err := ctlr.CheckSession(req)
 	if err != nil {
-		renderHTML(w, vals.Get("msg"), "layout", "public.navbar", "error")
+		utils.RenderHTML(w, vals.Get("msg"), "layout", "public.navbar", "error")
 	} else {
-		renderHTML(w, vals.Get("msg"), "layout", "private.navbar", "error")
+		utils.RenderHTML(w, vals.Get("msg"), "layout", "private.navbar", "error")
 	}
 }

@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"myChat/pkg/postgres"
 	"time"
 )
 
@@ -19,7 +20,7 @@ func (t *Thread) CreatedAtStr() string {
 
 // get the number of posts in a thread
 func (t *Thread) NumReplies() (num int, err error) {
-	db := GetDB()
+	db := postgres.Connect()
 	rows, err := db.Query("SELECT count(*) FROM posts WHERE thread_id = $1", t.Id)
 	if err != nil {
 		return
@@ -35,7 +36,7 @@ func (t *Thread) NumReplies() (num int, err error) {
 
 // get posts to a thread
 func (t *Thread) GetPosts() (posts []Post, err error) {
-	db = GetDB()
+	db := postgres.Connect()
 	rows, err := db.Query("SELECT id, uuid, body, user_id, thread_id, created_at FROM posts WHERE thread_id = $1", t.Id)
 	if err != nil {
 		return
@@ -54,7 +55,7 @@ func (t *Thread) GetPosts() (posts []Post, err error) {
 // Get the user who started this thread
 func (t *Thread) GetUser() (user User) {
 	user = User{}
-	db := GetDB()
+	db := postgres.Connect()
 	db.QueryRow("SELECT id, uuid, name, email, created_at FROM users WHERE id = $1", t.UserId).
 		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.CreatedAt)
 
