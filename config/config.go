@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"encoding/json"
@@ -15,16 +15,15 @@ type Config struct {
 	Static       string
 }
 
-var conf *Config
-
-func loadConfig() {
-	file, err := os.Open("config.json")
+func Load(filename string) (cfg *Config) {
+	file, err := os.Open(filename)
 	if err != nil {
 		log.Fatal("Cannot open config file", err)
 	}
 	defer file.Close()
 
-	if err := json.NewDecoder(file).Decode(&conf); err != nil {
+	if err := json.NewDecoder(file).Decode(&cfg); err != nil {
 		log.Fatal("Cannot get configuration from file", err)
 	}
+	return
 }

@@ -2,14 +2,15 @@ package controller
 
 import (
 	"log"
-	"myChat/repository"
+	"myChat/internal/repository"
+	"myChat/pkg/utils"
 	"net/http"
 )
 
 // GET /signup
 // Show the signup page
 func (ctlr *Controller) SignupFormHandler(w http.ResponseWriter, _ *http.Request) {
-	renderHTML(w, nil, "login.layout", "public.navbar", "signup")
+	utils.RenderHTML(w, nil, "login.layout", "public.navbar", "signup")
 }
 
 // POST /signup_account
@@ -33,7 +34,7 @@ func (ctlr *Controller) SignupPostHandler(w http.ResponseWriter, req *http.Reque
 // GET /login
 // login form page
 func (ctlr *Controller) LoginFormHandler(w http.ResponseWriter, _ *http.Request) {
-	renderHTML(w, nil, "login.layout", "public.navbar", "login")
+	utils.RenderHTML(w, nil, "login.layout", "public.navbar", "login")
 }
 
 // POST /authenticate

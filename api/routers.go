@@ -1,9 +1,9 @@
-package main
+package api
 
 import (
 	"database/sql"
-	"myChat/controller"
-	"myChat/repository"
+	"myChat/internal/controller"
+	"myChat/internal/repository"
 	"net/http"
 )
 
@@ -30,7 +30,7 @@ func NewRouter(db *sql.DB) (mux *http.ServeMux) {
 	mux.HandleFunc("GET /thread/read", ctlr.ReadThreadHandler)
 
 	// Serves static contents
-	files := http.FileServer(http.Dir("public"))
+	files := http.FileServer(http.Dir("web"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", files))
 
 	return
