@@ -11,7 +11,7 @@ import (
 // GET /threads/new
 // Show the new thread form page
 func (ctlr Controller) ThreadFormHandler(w http.ResponseWriter, req *http.Request) {
-	_, err := utils.Session(req)
+	_, err := ctlr.CheckSession(req)
 	if err != nil {
 		http.Redirect(w, req, "/login", http.StatusFound)
 	} else {
@@ -22,7 +22,7 @@ func (ctlr Controller) ThreadFormHandler(w http.ResponseWriter, req *http.Reques
 // POST /thread/create
 // Create the user account
 func (ctlr Controller) CreateThreadHandler(w http.ResponseWriter, req *http.Request) {
-	sess, err := utils.Session(req)
+	sess, err := ctlr.CheckSession(req)
 	if err != nil {
 		http.Redirect(w, req, "/login", http.StatusFound)
 	} else {
@@ -52,7 +52,7 @@ func (ctlr Controller) ReadThreadHandler(w http.ResponseWriter, req *http.Reques
 		url := []string{"/err?msg=", "Cannot read thread"}
 		http.Redirect(w, req, strings.Join(url, ""), http.StatusFound)
 	} else {
-		_, err := utils.Session(req)
+		_, err := ctlr.CheckSession(req)
 		if err != nil {
 			utils.RenderHTML(w, &thread, "layout", "public.navbar", "public.thread")
 		} else {
@@ -64,7 +64,7 @@ func (ctlr Controller) ReadThreadHandler(w http.ResponseWriter, req *http.Reques
 // POST /thread/post
 // Create the post
 func (ctlr Controller) PostThreadHandler(w http.ResponseWriter, req *http.Request) {
-	sess, err := utils.Session(req)
+	sess, err := ctlr.CheckSession(req)
 	if err != nil {
 		http.Redirect(w, req, "/login", http.StatusFound)
 	} else {

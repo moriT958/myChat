@@ -9,6 +9,7 @@ import (
 )
 
 type Config struct {
+	Version      string
 	Address      string
 	ReadTimeout  int64
 	WriteTimeout int64

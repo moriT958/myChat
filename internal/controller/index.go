@@ -15,7 +15,7 @@ func (ctlr *Controller) Index(w http.ResponseWriter, req *http.Request) {
 		url := []string{"/err?msg=", errMsg}
 		http.Redirect(w, req, strings.Join(url, ""), http.StatusFound)
 	} else {
-		_, err := utils.Session(req)
+		_, err := ctlr.CheckSession(req)
 		if err != nil {
 			utils.RenderHTML(w, threads, "layout", "public.navbar", "index")
 		} else {
@@ -28,7 +28,7 @@ func (ctlr *Controller) Index(w http.ResponseWriter, req *http.Request) {
 // error page
 func (ctlr *Controller) ErrHandler(w http.ResponseWriter, req *http.Request) {
 	vals := req.URL.Query()
-	_, err := utils.Session(req)
+	_, err := ctlr.CheckSession(req)
 	if err != nil {
 		utils.RenderHTML(w, vals.Get("msg"), "layout", "public.navbar", "error")
 	} else {

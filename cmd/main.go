@@ -4,29 +4,25 @@ import (
 	"fmt"
 	"myChat/api"
 	"myChat/config"
-	"myChat/internal/repository"
+	"myChat/pkg/postgres"
 	"net/http"
 	"time"
 
 	_ "github.com/lib/pq"
 )
 
-const (
-	VERSION = "0.1"
-)
-
 func main() {
-	// 設定のロード
+	// Load configurations
 	cfg := config.Load("config.json")
-	fmt.Println("myChat", VERSION, "started at", cfg.Address)
+	fmt.Printf("mychat App(version%s) Started on %s\n", cfg.Version, cfg.Address)
 
-	// データベースの取得
-	db := repository.GetDB()
+	// Connect DB
+	db := postgres.Connect()
 	defer db.Close()
 
 	rt := api.NewRouter(db)
 
-	// サーバ起動設定
+	// server settings
 	s := http.Server{
 		Addr:           cfg.Address,
 		Handler:        rt,

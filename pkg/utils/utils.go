@@ -1,10 +1,11 @@
 package utils
 
 import (
-	"errors"
+	"crypto/rand"
+	"crypto/sha1"
 	"fmt"
 	"html/template"
-	"myChat/internal/repository"
+	"log"
 	"net/http"
 )
 
@@ -19,19 +20,26 @@ func RenderHTML(w http.ResponseWriter, data interface{}, filenames ...string) {
 	templates.ExecuteTemplate(w, "layout", data)
 }
 
-// Checks if the user is logged in and has a session, if not err is not nil
-func Session(req *http.Request) (repository.Session, error) {
-	cookie, err := req.Cookie("_cookie")
+// create a random UUID with from RFC 4122
+// adapted from http://github.com/nu7hatch/gouuid
+func CreateUUID() (uuid string) {
+	u := new([16]byte)
+	_, err := rand.Read(u[:])
 	if err != nil {
-		return repository.Session{}, err
+		log.Fatalln("Cannot generate UUID", err)
 	}
 
-	sess := repository.Session{Uuid: cookie.Value}
-	if ok, err := sess.Check(); err != nil {
-		return repository.Session{}, err
-	} else if !ok {
-		return repository.Session{}, errors.New("invalid session")
-	}
+	// 0x40 is reserved variant from RFC 4122
+	u[8] = (u[8] | 0x40) & 0x7F
+	// Set the four most significant bits (bits 12 through 15) of the
+	// time_hi_and_version field to the 4-bit version number.
+	u[6] = (u[6] & 0xF) | (0x4 << 4)
+	uuid = fmt.Sprintf("%x-%x-%x-%x-%x", u[0:4], u[4:6], u[6:8], u[8:10], u[10:])
+	return
+}
 
-	return sess, nil
+// hash plaintext with SHA-1
+func Encrypt(plaintext string) (cryptext string) {
+	cryptext = fmt.Sprintf("%x", sha1.Sum([]byte(plaintext)))
+	return
 }

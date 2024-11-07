@@ -8,6 +8,10 @@ import (
 )
 
 func NewRouter(db *sql.DB) (mux *http.ServeMux) {
+	// object dependencies
+	// repository depends on db: *sql.DB
+	// controller depends on repository
+	// mux depends on controller
 	repo := repository.NewRepository(db)
 	ctlr := controller.NewController(*repo)
 
