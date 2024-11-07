@@ -25,7 +25,8 @@ func (u *User) CreateSession() (session Session, err error) {
 	}
 	defer stmt.Close()
 	// use QueryRow to return a row and scan the returned id into the Session struct
-	err = stmt.QueryRow(utils.CreateUUID(), u.Email, u.Id, time.Now()).Scan(&session.Id, &session.Uuid, &session.Email, &session.UserId, &session.CreatedAt)
+	err = stmt.QueryRow(utils.CreateUUID(), u.Email, u.Id, time.Now()).
+		Scan(&session.Id, &session.Uuid, &session.Email, &session.UserId, &session.CreatedAt)
 	if err != nil {
 		return
 	}
