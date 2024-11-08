@@ -3,9 +3,9 @@
 ## MUST
 
 - controller 改修
-- repositoryやっぱり4つに戻す。
-
   - service に切り出す。
+
+- gorilla/sessionを使った認証にする。
 
 - repository 改修(済)
 
