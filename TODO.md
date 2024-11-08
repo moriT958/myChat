@@ -5,7 +5,7 @@
 - controller 改修
   - service に切り出す。
 
-- gorilla/sessionを使った認証にする。
+- session方式見直し
 
 - repository 改修(済)
 
