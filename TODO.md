@@ -2,7 +2,8 @@
 
 ## MUST
 
-- controller 改修 
+- controller 改修
+- repositoryやっぱり4つに戻す。
 
   - service に切り出す。
 
