@@ -12,7 +12,9 @@ func NewRouter(db *sql.DB) (mux *http.ServeMux) {
 	// repository depends on db: *sql.DB
 	// controller depends on repository
 	// mux depends on controller
-	repo := repository.NewRepository(db)
+	uRepo := repository.NewUserRepository(db)
+	tRepo := repository.NewThreadRepository(db)
+	// TODO: insert service dependency here.
 	ctlr := controller.NewController(*repo)
 
 	mux = http.NewServeMux()
