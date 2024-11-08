@@ -5,9 +5,13 @@ import (
 )
 
 type Controller struct {
-	repo repository.Repository
+	uRepo repository.UserRepository
+	tRepo repository.ThreadRepository
 }
 
-func NewController(repo repository.Repository) *Controller {
-	return &Controller{repo: repo}
+func NewController(uRepo repository.UserRepository, tRepo repository.ThreadRepository) *Controller {
+	return &Controller{
+		uRepo: uRepo,
+		tRepo: tRepo,
+	}
 }

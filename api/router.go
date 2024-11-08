@@ -9,11 +9,14 @@ import (
 
 func NewRouter(db *sql.DB) (mux *http.ServeMux) {
 	// object dependencies
-	// repository depends on db: *sql.DB
-	// controller depends on repository
+	// repositories depends on db: *sql.DB
+	// service depends on repository
+	// controller depends on service
 	// mux depends on controller
-	repo := repository.NewRepository(db)
-	ctlr := controller.NewController(*repo)
+	uRepo := repository.NewUserRepository(db)
+	tRepo := repository.NewThreadRepository(db)
+	// ser := service.NewAppService(*uRepo, *tRepo)
+	ctlr := controller.NewController(*uRepo, *tRepo)
 
 	mux = http.NewServeMux()
 	mux.HandleFunc("GET /", ctlr.Index)         // index
