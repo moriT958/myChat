@@ -11,6 +11,7 @@ type UserRepositorier interface {
 	FindByEmail(string) (model.User, error)
 	FindByUuid(string) (model.User, error)
 	DeleteById(int) error
+	DeleteSessionById(int) error
 }
 
 type UserRepository struct {
@@ -69,7 +70,6 @@ func (ur *UserRepository) Save(user model.User) error {
 		if err != nil {
 			return err
 		}
-
 		if sessionExists {
 			// update session.
 			_, err = tx.Exec(
@@ -83,7 +83,6 @@ func (ur *UserRepository) Save(user model.User) error {
 				session.Uuid, session.Email, session.UserId, session.CreatedAt,
 			).Scan(&session.Id)
 		}
-
 		if err != nil {
 			return err
 		}
@@ -231,3 +230,7 @@ func (ur *UserRepository) getSessions(tx *sql.Tx, userId int) ([]model.Session, 
 
 	return sessions, nil
 }
+
+// func (ur *UserRepository) DeleteSessionById(userId int) error {
+
+// }

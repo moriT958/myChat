@@ -3,9 +3,11 @@ package controller
 import (
 	"errors"
 	"log"
+	"myChat/internal/model"
 	"myChat/internal/repository"
 	"myChat/pkg/utils"
 	"net/http"
+	"time"
 )
 
 // GET /signup
@@ -21,12 +23,12 @@ func (ctlr *Controller) SignupPostHandler(w http.ResponseWriter, req *http.Reque
 	if err != nil {
 		log.Println(err, "Cannot parse form")
 	}
-	user := repository.User{
+	user := model.User{
 		Name:     req.PostFormValue("name"),
 		Email:    req.PostFormValue("email"),
 		Password: req.PostFormValue("password"),
 	}
-	if err := user.Create(); err != nil {
+	if err := ctlr.uRepo.Save(user); err != nil {
 		log.Println(err, "Cannot create user")
 	}
 	http.Redirect(w, req, "/login", http.StatusFound)
@@ -42,14 +44,16 @@ func (ctlr *Controller) LoginFormHandler(w http.ResponseWriter, _ *http.Request)
 // Authenticate the user given the email and password
 func (ctlr *Controller) AuthenticateHandler(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
-	user, err := ctlr.repo.GetUserByEmail(req.PostFormValue("email"))
+	user, err := ctlr.uRepo.FindByEmail(req.PostFormValue("email"))
 	if err != nil {
-		log.Println(err, "Cannot find user")
+		log.Println(err, "Cannot find user by email")
 	}
 	if user.Password == utils.Encrypt(req.PostFormValue("password")) {
-		session, err := user.CreateSession()
-		if err != nil {
-			log.Println(err, "Cannot create session")
+		session := model.Session{
+			Uuid:      utils.CreateUUID(),
+			Email:     user.Email,
+			UserId:    user.Id,
+			CreatedAt: time.Now(),
 		}
 		cookie := http.Cookie{
 			Name:     "_cookie",
@@ -70,6 +74,10 @@ func (ctlr *Controller) LogoutHandler(w http.ResponseWriter, req *http.Request) 
 	cookie, err := req.Cookie("_cookie")
 	if err != http.ErrNoCookie {
 		log.Println(err, "Failed to get cookie")
+		// TODO:
+		// 現状user情報を取得する方法がない。
+		// そして、sessionがuserエンティティからしか取得できないため、sessionを削除できない。
+		// sessionとuserを分けて別々のリポジトリを作るべきか？
 		session := repository.Session{Uuid: cookie.Value}
 		session.Delete()
 	}

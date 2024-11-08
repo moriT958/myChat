@@ -2,9 +2,13 @@
 
 ## MUST
 
-- repository 改修
+- controller 改修 
 
-  - model を切り出す。
+  - service に切り出す。
+
+- repository 改修(済)
+
+  - model を切り出す
 
     - thread と post、user と session は集約して、2 つのエンティティ(モデル)にまとめる。
     - `/model/user.go`と`/model/thread.go`に記述
@@ -15,6 +19,7 @@
     - repository とのデータのやり取りはエンティティ(集約)単位で行う。
 
   - /service を作成し、model を用いてアプリのロジックを表現する。
+
   - sql クエリは全部 repository に封じ込める。
 
     - service では全てのデータをエンティティとして扱い、repository の save メソッドや find メソッドで永続化する。
@@ -25,7 +30,7 @@
   - ディレクトリ構成: `/internal`内は、`/repository`,`/model`,`/service`,`/controller`の順に依存したパッケージの構成になる。
   - `/model`は何にも依存しない。`/repository`と`/service`の間のデータのやり取りに使う。
 
-  - repository のテスト
+- repository のテスト
 
 - CI 組む
 
