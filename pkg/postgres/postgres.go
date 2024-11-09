@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 	"sync"
+
+	"github.com/joho/godotenv"
 )
 
 var (
@@ -15,6 +17,9 @@ var (
 func Connect() *sql.DB {
 	once.Do(func() {
 		var err error
+		if err := godotenv.Load(".env"); err != nil {
+			log.Fatal("failed load dotenv file: ", err)
+		}
 		dsn := os.Getenv("DATABASE_URL")
 		db, err = sql.Open("postgres", dsn)
 		if err != nil {

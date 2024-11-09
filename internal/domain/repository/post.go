@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"myChat/internal/model"
+	"myChat/internal/domain/model"
 )
 
 type PostRepositorier interface {
@@ -35,7 +35,7 @@ func (pr *PostRepository) Save(post model.Post) error {
 	}()
 
 	var exists bool
-	if err := tx.QueryRow("SELECT EXITS(SELECT 1 FROM posts WHERE id = $1)", post.Id).Scan(&exists); err != nil {
+	if err := tx.QueryRow("SELECT EXISTS(SELECT 1 FROM posts WHERE uuid = $1)", post.Uuid).Scan(&exists); err != nil {
 		return err
 	}
 	if exists {
@@ -48,6 +48,9 @@ func (pr *PostRepository) Save(post model.Post) error {
 			"INSERT INTO posts (uuid, body, user_id, thread_id, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id",
 			post.Uuid, post.Body, post.UserId, post.ThreadId, post.CreatedAt,
 		).Scan(&post.Id)
+	}
+	if err != nil {
+		return err
 	}
 
 	return nil
