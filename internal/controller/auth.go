@@ -2,7 +2,7 @@ package controller
 
 import (
 	"log"
-	"myChat/internal/model"
+	"myChat/internal/domain/model"
 	"myChat/pkg/utils"
 	"net/http"
 	"time"

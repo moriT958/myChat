@@ -3,7 +3,7 @@ package app
 import (
 	"database/sql"
 	"myChat/internal/controller"
-	"myChat/internal/repository"
+	"myChat/internal/domain/repository"
 	"net/http"
 )
 

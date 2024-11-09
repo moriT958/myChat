@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"myChat/internal/model"
+	"myChat/internal/domain/model"
 )
 
 type ThreadRepositorier interface {
@@ -77,7 +77,9 @@ func (tr *ThreadRepository) FindById(id int) (model.Thread, error) {
 
 func (tr *ThreadRepository) FindByUuid(uuid string) (model.Thread, error) {
 	var thread model.Thread
-	if err := tr.db.QueryRow("SELECT * FROM threads WHERE uuid = $1", uuid).Scan(&thread); err != nil {
+	err := tr.db.QueryRow("SELECT * FROM threads WHERE uuid = $1", uuid).
+		Scan(&thread.Id, &thread.Uuid, &thread.Topic, &thread.UserId, &thread.CreatedAt)
+	if err != nil {
 		return model.Thread{}, err
 	}
 	return thread, nil

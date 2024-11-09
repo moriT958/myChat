@@ -2,7 +2,7 @@ package repository
 
 import (
 	"database/sql"
-	"myChat/internal/model"
+	"myChat/internal/domain/model"
 )
 
 type SessionRepositorier interface {
