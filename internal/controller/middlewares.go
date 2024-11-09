@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"log"
 	"myChat/internal/model"
 	"net/http"
 )
@@ -10,6 +11,7 @@ import (
 func (ctlr *Controller) CheckSession(req *http.Request) (model.Session, error) {
 	cookie, err := req.Cookie("_cookie")
 	if err != nil {
+		log.Println("auth failed, cannot get cookie", err)
 		return model.Session{}, err
 	}
 
@@ -17,6 +19,7 @@ func (ctlr *Controller) CheckSession(req *http.Request) (model.Session, error) {
 	// if session doesnt exits in database.
 	session, err := ctlr.sRepo.FindByUuid(cookie.Value)
 	if (err != nil || session == model.Session{}) {
+		log.Println("auth failed, cannot get user session", err)
 		return model.Session{}, err
 	}
 

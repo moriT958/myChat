@@ -66,7 +66,8 @@ func (sr *SessionRepository) Save(session model.Session) error {
 func (sr *SessionRepository) FindByUuid(uuid string) (model.Session, error) {
 	var session model.Session
 
-	err := sr.db.QueryRow("SELECT * FROM sessions WHERE uuid = $1", uuid).Scan(&session)
+	err := sr.db.QueryRow("SELECT * FROM sessions WHERE uuid = $1", uuid).
+		Scan(&session.Id, &session.Uuid, &session.Email, &session.UserId, &session.CreatedAt)
 	if err != nil {
 		return session, err
 	}
@@ -101,7 +102,7 @@ func (sr *SessionRepository) DeleteByUuid(uuid string) error {
 }
 
 func (sr *SessionRepository) DeleteByUserId(userId int) error {
-	if _, err := sr.db.Exec("DELETE FROM session WHERE user_id = $1", userId); err != nil {
+	if _, err := sr.db.Exec("DELETE FROM sessions WHERE user_id = $1", userId); err != nil {
 		return err
 	}
 	return nil

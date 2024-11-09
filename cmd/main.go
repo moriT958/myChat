@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"myChat/api"
+	"myChat/app"
 	"myChat/config"
 	"myChat/pkg/postgres"
 	"net/http"
@@ -20,7 +20,7 @@ func main() {
 	db := postgres.Connect()
 	defer db.Close()
 
-	rt := api.NewRouter(db)
+	rt := app.NewRouter(db)
 
 	// server settings
 	s := http.Server{
