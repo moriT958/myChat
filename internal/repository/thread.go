@@ -8,6 +8,7 @@ import (
 type ThreadRepositorier interface {
 	Save(model.Thread) error
 	FindById(int) (model.Thread, error)
+	FindByUuid(string) (model.Thread, error)
 	FindAll() ([]model.Thread, error)
 	DeleteById(int) error
 	CountPostNum(int) (int, error)
@@ -71,6 +72,14 @@ func (tr *ThreadRepository) FindById(id int) (model.Thread, error) {
 		return model.Thread{}, err
 	}
 
+	return thread, nil
+}
+
+func (tr *ThreadRepository) FindByUuid(uuid string) (model.Thread, error) {
+	var thread model.Thread
+	if err := tr.db.QueryRow("SELECT * FROM threads WHERE uuid = $1", uuid).Scan(&thread); err != nil {
+		return model.Thread{}, err
+	}
 	return thread, nil
 }
 

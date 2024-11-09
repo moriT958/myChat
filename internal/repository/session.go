@@ -63,7 +63,7 @@ func (sr *SessionRepository) Save(session model.Session) error {
 	return nil
 }
 
-func (sr *SessionRepository) FindByUuid(tx *sql.Tx, uuid string) (model.Session, error) {
+func (sr *SessionRepository) FindByUuid(uuid string) (model.Session, error) {
 	var session model.Session
 
 	err := sr.db.QueryRow("SELECT * FROM sessions WHERE uuid = $1", uuid).Scan(&session)
@@ -74,9 +74,9 @@ func (sr *SessionRepository) FindByUuid(tx *sql.Tx, uuid string) (model.Session,
 	return session, nil
 }
 
-func (sr *SessionRepository) FindByUserId(tx *sql.Tx, userId int) ([]model.Session, error) {
+func (sr *SessionRepository) FindByUserId(userId int) ([]model.Session, error) {
 	var sessions []model.Session
-	rows, err := tx.Query("SELECT * FROM sessions WHERE user_id = $1", userId)
+	rows, err := sr.db.Query("SELECT * FROM sessions WHERE user_id = $1", userId)
 	if err != nil {
 		return sessions, err
 	}

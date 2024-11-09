@@ -14,9 +14,11 @@ func NewRouter(db *sql.DB) (mux *http.ServeMux) {
 	// controller depends on service
 	// mux depends on controller
 	uRepo := repository.NewUserRepository(db)
+	sRepo := repository.NewSessionRepository(db)
 	tRepo := repository.NewThreadRepository(db)
+	pRepo := repository.NewPostRepository(db)
 	// ser := service.NewAppService(*uRepo, *tRepo)
-	ctlr := controller.NewController(*uRepo, *tRepo)
+	ctlr := controller.NewController(*uRepo, *sRepo, *tRepo, *pRepo)
 
 	mux = http.NewServeMux()
 	mux.HandleFunc("GET /", ctlr.Index)         // index

@@ -66,7 +66,9 @@ func (ur *UserRepository) Save(user model.User) error {
 func (ur *UserRepository) FindById(id int) (model.User, error) {
 	var user model.User
 
-	if err := ur.db.QueryRow("SELECT * FROM users WHERE id == $1", id).Scan(&user); err != nil {
+	err := ur.db.QueryRow("SELECT * FROM users WHERE id = $1", id).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	if err != nil {
 		return user, err
 	}
 
@@ -76,7 +78,9 @@ func (ur *UserRepository) FindById(id int) (model.User, error) {
 func (ur *UserRepository) FindByEmail(email string) (model.User, error) {
 	var user model.User
 
-	if err := ur.db.QueryRow("SELECT * FROM users WHERE email == $1", email).Scan(&user); err != nil {
+	err := ur.db.QueryRow("SELECT * FROM users WHERE email = $1", email).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	if err != nil {
 		return user, err
 	}
 
@@ -86,7 +90,9 @@ func (ur *UserRepository) FindByEmail(email string) (model.User, error) {
 func (ur *UserRepository) FindByUuid(uuid string) (model.User, error) {
 	var user model.User
 
-	if err := ur.db.QueryRow("SELECT * FROM users WHERE uuid == $1", uuid).Scan(&user); err != nil {
+	err := ur.db.QueryRow("SELECT * FROM users WHERE uuid = $1", uuid).
+		Scan(&user.Id, &user.Uuid, &user.Name, &user.Email, &user.Password, &user.CreatedAt)
+	if err != nil {
 		return user, err
 	}
 
