@@ -9,7 +9,7 @@ import (
 // GET /
 // Home page
 func (ctlr *Controller) Index(w http.ResponseWriter, req *http.Request) {
-	threads, err := ctlr.repo.GetAllThreads()
+	threads, err := ctlr.tRepo.FindAll()
 	if err != nil {
 		errMsg := "cannot get threads"
 		url := []string{"/err?msg=", errMsg}

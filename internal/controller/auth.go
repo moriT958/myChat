@@ -1,10 +1,8 @@
 package controller
 
 import (
-	"errors"
 	"log"
 	"myChat/internal/model"
-	"myChat/internal/repository"
 	"myChat/pkg/utils"
 	"net/http"
 	"time"
@@ -24,9 +22,11 @@ func (ctlr *Controller) SignupPostHandler(w http.ResponseWriter, req *http.Reque
 		log.Println(err, "Cannot parse form")
 	}
 	user := model.User{
-		Name:     req.PostFormValue("name"),
-		Email:    req.PostFormValue("email"),
-		Password: req.PostFormValue("password"),
+		Uuid:      utils.CreateUUID(),
+		Name:      req.PostFormValue("name"),
+		Email:     req.PostFormValue("email"),
+		Password:  utils.Encrypt(req.PostFormValue("password")),
+		CreatedAt: time.Now(),
 	}
 	if err := ctlr.uRepo.Save(user); err != nil {
 		log.Println(err, "Cannot create user")
@@ -43,7 +43,9 @@ func (ctlr *Controller) LoginFormHandler(w http.ResponseWriter, _ *http.Request)
 // POST /authenticate
 // Authenticate the user given the email and password
 func (ctlr *Controller) AuthenticateHandler(w http.ResponseWriter, req *http.Request) {
-	req.ParseForm()
+	if err := req.ParseForm(); err != nil {
+		log.Println("cannot parse form: ", err)
+	}
 	user, err := ctlr.uRepo.FindByEmail(req.PostFormValue("email"))
 	if err != nil {
 		log.Println(err, "Cannot find user by email")
@@ -54,6 +56,9 @@ func (ctlr *Controller) AuthenticateHandler(w http.ResponseWriter, req *http.Req
 			Email:     user.Email,
 			UserId:    user.Id,
 			CreatedAt: time.Now(),
+		}
+		if err := ctlr.sRepo.Save(session); err != nil {
+			log.Println(err)
 		}
 		cookie := http.Cookie{
 			Name:     "_cookie",
@@ -72,31 +77,21 @@ func (ctlr *Controller) AuthenticateHandler(w http.ResponseWriter, req *http.Req
 // Logs the user out
 func (ctlr *Controller) LogoutHandler(w http.ResponseWriter, req *http.Request) {
 	cookie, err := req.Cookie("_cookie")
-	if err != http.ErrNoCookie {
-		log.Println(err, "Failed to get cookie")
-		// TODO:
-		// 現状user情報を取得する方法がない。
-		// そして、sessionがuserエンティティからしか取得できないため、sessionを削除できない。
-		// sessionとuserを分けて別々のリポジトリを作るべきか？
-		session := repository.Session{Uuid: cookie.Value}
-		session.Delete()
-	}
-	http.Redirect(w, req, "/", http.StatusFound)
-}
-
-// Checks if the user is logged in and has a session, if not err is not nil
-func (ctlr Controller) CheckSession(req *http.Request) (repository.Session, error) {
-	cookie, err := req.Cookie("_cookie")
 	if err != nil {
-		return repository.Session{}, err
+		log.Println("failed to get cookie: ", err)
+		if err == http.ErrNoCookie {
+			log.Println(err)
+		}
 	}
 
-	sess := repository.Session{Uuid: cookie.Value}
-	if ok, err := sess.Check(); err != nil {
-		return repository.Session{}, err
-	} else if !ok {
-		return repository.Session{}, errors.New("invalid session")
+	// delete all user's session
+	session, err := ctlr.sRepo.FindByUuid(cookie.Value)
+	if err != nil {
+		log.Println(err)
+	}
+	if err := ctlr.sRepo.DeleteByUserId(session.UserId); err != nil {
+		log.Println(err)
 	}
 
-	return sess, nil
+	http.Redirect(w, req, "/", http.StatusFound)
 }
