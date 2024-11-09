@@ -27,11 +27,12 @@ func (tr *ThreadRepository) Save(thread model.Thread) error {
 	if err != nil {
 		return err
 	}
-
 	defer func() {
 		// rollback if error occurs.
 		if err != nil {
 			tx.Rollback()
+		} else {
+			tx.Commit()
 		}
 	}()
 
@@ -41,7 +42,6 @@ func (tr *ThreadRepository) Save(thread model.Thread) error {
 	if err != nil {
 		return err
 	}
-
 	// if thread existed, update thread.
 	// if not exited, insert new thread.
 	if exists {
@@ -59,64 +59,17 @@ func (tr *ThreadRepository) Save(thread model.Thread) error {
 		return err
 	}
 
-	// save posts
-	for _, post := range thread.Posts {
-		// check if post exits.
-		var postExists bool
-		err = tx.QueryRow("SELECT EXISTS(SELECT 1 FROM posts WHERE id = $1)", post.Id).Scan(&postExists)
-		if err != nil {
-			return err
-		}
-
-		if postExists {
-			// update post.
-			_, err = tx.Exec(
-				"UPDATE posts SET uuid = $1, body = $2, user_id = $3, thread_id = $4, created_at = $5 WHERE id = $6",
-				post.Uuid, post.Body, post.UserId, post.ThreadId, post.CreatedAt, post.Id,
-			)
-		} else {
-			// insert new post
-			err = tx.QueryRow(
-				"INSERT INTO posts (uuid, body, user_id, thread_id, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING id",
-				post.Uuid, post.Body, post.UserId, post.ThreadId, post.CreatedAt,
-			).Scan(&post.Id)
-		}
-
-		if err != nil {
-			return err
-		}
-	}
-
-	// commit transaction
-	return tx.Commit()
+	return nil
 }
 
 func (tr *ThreadRepository) FindById(id int) (model.Thread, error) {
-	tx, err := tr.db.Begin()
-	if err != nil {
-		return model.Thread{}, err
-	}
-	defer func() {
-		if err != nil {
-			tx.Rollback()
-		} else {
-			tx.Commit()
-		}
-	}()
 
 	var thread model.Thread
-	err = tx.QueryRow("SELECT * FROM threads WHERE id = $1", id).
+	err := tr.db.QueryRow("SELECT * FROM threads WHERE id = $1", id).
 		Scan(&thread.Id, &thread.Uuid, &thread.Topic, &thread.UserId, &thread.CreatedAt)
 	if err != nil {
 		return model.Thread{}, err
 	}
-
-	// get posts replied on this thread
-	posts, err := tr.getPosts(tx, id)
-	if err != nil {
-		return model.Thread{}, err
-	}
-	thread.Posts = posts
 
 	return thread, nil
 }
@@ -147,8 +100,8 @@ func (tr *ThreadRepository) DeleteById(id int) error {
 }
 
 // get the number of posts in a thread
-func (tr *ThreadRepository) CountPostNum(threadId int) (num int, err error) {
-	rows, err := tr.db.Query("SELECT count(*) FROM posts WHERE thread_id = $1", threadId)
+func (tr *ThreadRepository) CountPostNum(id int) (num int, err error) {
+	rows, err := tr.db.Query("SELECT count(*) FROM posts WHERE thread_id = $1", id)
 	if err != nil {
 		return
 	}
@@ -159,26 +112,4 @@ func (tr *ThreadRepository) CountPostNum(threadId int) (num int, err error) {
 	}
 	rows.Close()
 	return
-}
-
-func (tr *ThreadRepository) getPosts(tx *sql.Tx, threadId int) ([]model.Post, error) {
-	rows, err := tx.Query("SELECT * FROM posts WHERE thread_id = $1", threadId)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-
-	var posts []model.Post
-	for rows.Next() {
-		post := model.Post{}
-		if err := rows.Scan(&post.Id, &post.Uuid, &post.Body, &post.UserId, &post.ThreadId, &post.CreatedAt); err != nil {
-			return nil, err
-		}
-		posts = append(posts, post)
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-
-	return posts, nil
 }
