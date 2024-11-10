@@ -1,26 +1,13 @@
 package controller
 
 import (
-	"myChat/internal/domain/repository"
+	"myChat/internal/service"
 )
 
 type Controller struct {
-	uRepo repository.UserRepository
-	sRepo repository.SessionRepository
-	tRepo repository.ThreadRepository
-	pRepo repository.PostRepository
+	Service *service.AppService
 }
 
-func NewController(
-	uRepo repository.UserRepository,
-	sRepo repository.SessionRepository,
-	tRepo repository.ThreadRepository,
-	pRepo repository.PostRepository,
-) *Controller {
-	return &Controller{
-		uRepo: uRepo,
-		sRepo: sRepo,
-		tRepo: tRepo,
-		pRepo: pRepo,
-	}
+func NewController(s *service.AppService) *Controller {
+	return &Controller{Service: s}
 }

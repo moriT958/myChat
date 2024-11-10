@@ -20,12 +20,12 @@ func main() {
 	db := postgres.Connect()
 	defer db.Close()
 
-	rt := app.NewRouter(db)
+	hdlr := app.NewAppHandler(db)
 
 	// server settings
 	s := http.Server{
 		Addr:           cfg.Address,
-		Handler:        rt,
+		Handler:        hdlr,
 		ReadTimeout:    time.Duration(cfg.ReadTimeout * int64(time.Second)),
 		WriteTimeout:   time.Duration(cfg.WriteTimeout * int64(time.Second)),
 		MaxHeaderBytes: 1 << 20,

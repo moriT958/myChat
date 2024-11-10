@@ -1,41 +1,38 @@
 package controller
 
 import (
+	"log"
 	"myChat/pkg/utils"
 	"net/http"
 	"strings"
 )
 
+type indexPageData struct {
+	Threads []struct {
+		Topic      string
+		Uuid       string
+		UserName   string
+		CreatedAt  string
+		NumReplies int
+	}
+}
+
 // GET /
 // Home page
 func (ctlr *Controller) Index(w http.ResponseWriter, req *http.Request) {
+	cookie, err := req.Cookie("_cookie")
+	if err != nil {
+		log.Println("auth failed, cannot get cookie", err)
+	}
 
-	threads, err := ctlr.tRepo.FindAll()
+	data, err := ctlr.Service.Forum.ReadThreadList()
 	if err != nil {
 		errMsg := "cannot get threads"
 		url := []string{"/err?msg=", errMsg}
 		http.Redirect(w, req, strings.Join(url, ""), http.StatusFound)
 	}
 
-	data := make([]struct {
-		Uuid       string
-		Topic      string
-		UserName   string
-		CreatedAt  string
-		NumReplies int
-	}, len(threads))
-
-	for i, thread := range threads {
-		data[i].Uuid = thread.Uuid
-		data[i].Topic = thread.Topic
-		usr, _ := ctlr.uRepo.FindById(thread.Id)
-		data[i].UserName = usr.Name
-		data[i].CreatedAt = thread.CreatedAtStr()
-		repNum, _ := ctlr.tRepo.CountPostNum(thread.Id)
-		data[i].NumReplies = repNum
-	}
-
-	_, err = ctlr.CheckSession(req)
+	_, err = ctlr.Service.Auth.CheckSession(cookie.Value)
 	if err != nil {
 		utils.RenderHTML(w, data, "layout", "public.navbar", "index")
 	} else {
@@ -46,8 +43,13 @@ func (ctlr *Controller) Index(w http.ResponseWriter, req *http.Request) {
 // GET /err
 // error page
 func (ctlr *Controller) ErrHandler(w http.ResponseWriter, req *http.Request) {
+	cookie, err := req.Cookie("_cookie")
+	if err != nil {
+		log.Println("auth failed, cannot get cookie", err)
+	}
+
 	vals := req.URL.Query()
-	_, err := ctlr.CheckSession(req)
+	_, err = ctlr.Service.Auth.CheckSession(cookie.Value)
 	if err != nil {
 		utils.RenderHTML(w, vals.Get("msg"), "layout", "public.navbar", "error")
 	} else {

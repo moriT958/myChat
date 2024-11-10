@@ -10,14 +10,18 @@ import (
 )
 
 // render HTML file responce
-func RenderHTML(w http.ResponseWriter, data interface{}, filenames ...string) {
+func RenderHTML(w http.ResponseWriter, data interface{}, filenames ...string) error {
 	var files []string
 	for _, file := range filenames {
 		files = append(files, fmt.Sprintf("web/templates/%s.html", file))
 	}
 
 	templates := template.Must(template.ParseFiles(files...))
-	templates.ExecuteTemplate(w, "layout", data)
+	err := templates.ExecuteTemplate(w, "layout", data)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 // create a random UUID with from RFC 4122

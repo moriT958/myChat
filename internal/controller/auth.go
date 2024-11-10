@@ -2,10 +2,8 @@ package controller
 
 import (
 	"log"
-	"myChat/internal/domain/model"
 	"myChat/pkg/utils"
 	"net/http"
-	"time"
 )
 
 // GET /signup
@@ -21,14 +19,12 @@ func (ctlr *Controller) SignupPostHandler(w http.ResponseWriter, req *http.Reque
 	if err != nil {
 		log.Println(err, "Cannot parse form")
 	}
-	user := model.User{
-		Uuid:      utils.CreateUUID(),
-		Name:      req.PostFormValue("name"),
-		Email:     req.PostFormValue("email"),
-		Password:  utils.Encrypt(req.PostFormValue("password")),
-		CreatedAt: time.Now(),
-	}
-	if err := ctlr.uRepo.Save(user); err != nil {
+	err = ctlr.Service.Auth.CreateUser(
+		req.PostFormValue("name"),
+		req.PostFormValue("email"),
+		req.PostFormValue("password"),
+	)
+	if err != nil {
 		log.Println(err, "Cannot create user")
 	}
 	http.Redirect(w, req, "/login", http.StatusFound)
@@ -46,31 +42,22 @@ func (ctlr *Controller) AuthenticateHandler(w http.ResponseWriter, req *http.Req
 	if err := req.ParseForm(); err != nil {
 		log.Println("cannot parse form: ", err)
 	}
-	user, err := ctlr.uRepo.FindByEmail(req.PostFormValue("email"))
+	uuid, err := ctlr.Service.Auth.Login(
+		req.PostFormValue("email"),
+		req.PostFormValue("password"),
+	)
 	if err != nil {
-		log.Println(err, "Cannot find user by email")
-	}
-	if user.Password == utils.Encrypt(req.PostFormValue("password")) {
-		session := model.Session{
-			Uuid:      utils.CreateUUID(),
-			Email:     user.Email,
-			UserId:    user.Id,
-			CreatedAt: time.Now(),
-		}
-		if err := ctlr.sRepo.Save(session); err != nil {
-			log.Println(err)
-		}
-		cookie := http.Cookie{
-			Name:     "_cookie",
-			Value:    session.Uuid,
-			HttpOnly: true,
-		}
-		http.SetCookie(w, &cookie)
-		http.Redirect(w, req, "/", http.StatusFound)
-	} else {
+		log.Println("failed to login: ", err)
 		http.Redirect(w, req, "/login", http.StatusFound)
 	}
 
+	cookie := http.Cookie{
+		Name:     "_cookie",
+		Value:    uuid,
+		HttpOnly: true,
+	}
+	http.SetCookie(w, &cookie)
+	http.Redirect(w, req, "/", http.StatusFound)
 }
 
 // GET /logout
@@ -85,12 +72,8 @@ func (ctlr *Controller) LogoutHandler(w http.ResponseWriter, req *http.Request) 
 	}
 
 	// delete all user's session
-	session, err := ctlr.sRepo.FindByUuid(cookie.Value)
-	if err != nil {
-		log.Println(err)
-	}
-	if err := ctlr.sRepo.DeleteByUserId(session.UserId); err != nil {
-		log.Println(err)
+	if err := ctlr.Service.Auth.Logout(cookie.Value); err != nil {
+		log.Println("failed to logout: ", err)
 	}
 
 	http.Redirect(w, req, "/", http.StatusFound)
