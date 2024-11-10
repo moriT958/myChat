@@ -1,3 +1,13 @@
 package service
 
-// sessionに実装したい機能の一時置き場
+type AppService struct {
+	Auth  *AuthService
+	Forum *ForumService
+}
+
+func NewAppService(auth *AuthService, forum *ForumService) *AppService {
+	return &AppService{
+		Auth:  auth,
+		Forum: forum,
+	}
+}
