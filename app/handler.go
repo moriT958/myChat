@@ -11,7 +11,7 @@ import (
 func NewAppHandler(db *sql.DB) (mux *http.ServeMux) {
 
 	// di
-	ctlr := resolveDependencyToController(db)
+	ctlr := resolveDependencyOnController(db)
 
 	mux = http.NewServeMux()
 	mux.HandleFunc("GET /", ctlr.Index)         // index
@@ -43,7 +43,7 @@ func NewAppHandler(db *sql.DB) (mux *http.ServeMux) {
 // service depends on repository
 // controller depends on service
 
-func resolveDependencyToController(db *sql.DB) *controller.Controller {
+func resolveDependencyOnController(db *sql.DB) *controller.Controller {
 	uRepo := repository.NewUserRepository(db)
 	sRepo := repository.NewSessionRepository(db)
 	tRepo := repository.NewThreadRepository(db)
