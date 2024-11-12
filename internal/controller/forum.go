@@ -17,7 +17,10 @@ func (ctlr *Controller) ThreadFormHandler(w http.ResponseWriter, req *http.Reque
 		if err == http.ErrNoCookie {
 			log.Println(err)
 		}
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
 	}
+
 	_, err = ctlr.Service.Auth.CheckSession(cookie.Value)
 	if err != nil {
 		log.Println("need login to create thread", err)
@@ -56,20 +59,24 @@ func (ctlr *Controller) CreateThreadHandler(w http.ResponseWriter, req *http.Req
 // GET /thread/read
 // Show the details of the thread, including the posts and the form to write a post
 func (ctlr *Controller) ReadThreadHandler(w http.ResponseWriter, req *http.Request) {
+	vals := req.URL.Query()
+	uuid := vals.Get("id")
+
 	cookie, err := req.Cookie("_cookie")
 	if err != nil {
 		log.Println("failed to get cookie: ", err)
 		if err == http.ErrNoCookie {
 			log.Println(err)
 		}
+		http.Redirect(w, req, "/login", http.StatusFound)
+		return
 	}
-
-	vals := req.URL.Query()
-	uuid := vals.Get("id")
 
 	data, err := ctlr.Service.Forum.ReadThreadDetail(uuid)
 	if err != nil {
+		log.Println("cannot read thread detail: ", err)
 		http.Redirect(w, req, "/err?msg=Cannot read thread", http.StatusFound)
+		return
 	}
 
 	// Check session, and Navigate page.

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"log"
 	"myChat/internal/domain/model"
 	"myChat/internal/domain/repository"
 	"myChat/pkg/utils"
@@ -37,19 +38,22 @@ func (fs *ForumService) ReadThreadList() (ThreadList, error) {
 	var data ThreadList
 	threads, err := fs.tRepo.FindAll()
 	if err != nil {
+		log.Println("err at FindAll: ", err)
 		return data, err
 	}
 
 	for _, thread := range threads {
 		// Get user who wrote this thread.
-		user, err := fs.uRepo.FindById(thread.Id)
+		user, err := fs.uRepo.FindById(thread.UserId)
 		if err != nil {
+			log.Println("err at FindById: ", err)
 			return data, err
 		}
 
 		// Get post number that is replied on this thread.
 		replies, err := fs.tRepo.CountPostNum(thread.Id)
 		if err != nil {
+			log.Println("err at CountPostNum: ", err)
 			return data, err
 		}
 
@@ -129,20 +133,29 @@ type ThreadDetail struct {
 func (fs *ForumService) ReadThreadDetail(uuid string) (ThreadDetail, error) {
 	// Create template data.
 	var data ThreadDetail
+
 	thread, err := fs.tRepo.FindByUuid(uuid)
 	if err != nil {
+		log.Println("err at FindByUuid", err)
 		return data, err
 	}
 
 	user, err := fs.uRepo.FindById(thread.UserId)
 	if err != nil {
+		log.Println("err at FindById", err)
 		return data, err
 	}
 
 	posts, err := fs.pRepo.FindByThreadId(thread.Id)
 	if err != nil {
+		log.Println("err at FindByThreadId", err)
 		return data, err
 	}
+	data.Posts = make([]struct {
+		Body      string
+		UserName  string
+		CreatedAt string
+	}, len(posts))
 
 	data.Topic = thread.Topic
 	data.UserName = user.Name
@@ -151,8 +164,9 @@ func (fs *ForumService) ReadThreadDetail(uuid string) (ThreadDetail, error) {
 
 	// Insert post data into thread data.
 	for i, post := range posts {
-		user, err := fs.uRepo.FindById(post.Id)
+		user, err := fs.uRepo.FindById(post.UserId)
 		if err != nil {
+			log.Println("err at FindById(user)", err)
 			return data, err
 		}
 
