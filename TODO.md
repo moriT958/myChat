@@ -7,9 +7,7 @@
   - cookie が nil なのに、cookie.Value を呼び出していたことが原因。
   - 今回修正した箇所以外にも未対応箇所があるかもしれないので、後々修正していく。
 
-- repository のテスト
-
-- CI 組む
+- REST api 化
 
 - logger 実装
   - 現状：err 発生時になんでもかんでもコンソールに出力している。
@@ -23,5 +21,5 @@
 
 ## WANT
 
-- cssスタイル当てる
-- websocketでリアルタイム化
+- websocket でリアルタイム化
+- CI 組む
