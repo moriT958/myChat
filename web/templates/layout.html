@@ -3,29 +3,21 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=9">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=9" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>myChat</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap"
-      rel="stylesheet"
-    />
 
     <link rel="stylesheet" href="/static/css/sanitize.css" />
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
     <link rel="stylesheet" href="/static/css/style.css" />
   </head>
   <body>
     {{ template "navbar" . }}
 
-    <div class="container">
-      
-      {{ template "content" . }}
-      
-    </div> <!-- /container -->
-    
+    <div class="container">{{ template "content" . }}</div>
+
+    <script src="/static/js/bootstrap.min.js"></script>
   </body>
 </html>
 
