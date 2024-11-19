@@ -18,20 +18,20 @@ func NewAppHandler(db *sql.DB) (mux *http.ServeMux) {
 	mux.HandleFunc("GET /err", ctlr.ErrHandler) // err
 
 	// Defined in controller directory
-	// authentication handlers defined in auth.go
+	// authentication handlers defined in internal/controller/auth.go
 	mux.HandleFunc("GET /login", ctlr.LoginFormHandler)
 	mux.HandleFunc("GET /logout", ctlr.LogoutHandler)
 	mux.HandleFunc("GET /signup", ctlr.SignupFormHandler)
 	mux.HandleFunc("POST /signup_account", ctlr.SignupPostHandler)
 	mux.HandleFunc("POST /authenticate", ctlr.AuthenticateHandler)
 
-	// // thread handlers difined in thread.go
+	// thread handlers difined in internal/controller/forum.go
 	mux.HandleFunc("GET /threads/new", ctlr.ThreadFormHandler)
 	mux.HandleFunc("POST /thread/create", ctlr.CreateThreadHandler)
 	mux.HandleFunc("POST /thread/post", ctlr.PostThreadHandler)
 	mux.HandleFunc("GET /thread/read", ctlr.ReadThreadHandler)
 
-	// Serves static contents
+	// Serve static contents
 	files := http.FileServer(http.Dir("web"))
 	mux.Handle("GET /static/", http.StripPrefix("/static/", files))
 
