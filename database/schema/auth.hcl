@@ -9,7 +9,7 @@ table "users" {
         null = false
     }
     column "name" {
-        type = varchar(255)
+        type = varchar(30)
         null = true
     }
     column "email" {
