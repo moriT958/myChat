@@ -45,7 +45,7 @@ table "posts" {
         type = varchar(64)
     }
     column "body" {
-        null = true
+        null = false
         type = text
     }
     column "user_id" {
