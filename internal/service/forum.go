@@ -1,9 +1,9 @@
 package service
 
 import (
-	"log"
 	"myChat/internal/domain/model"
 	"myChat/internal/domain/repository"
+	"myChat/pkg/apperrors"
 	"myChat/pkg/utils"
 	"time"
 )
@@ -38,7 +38,7 @@ func (fs *ForumService) ReadThreadList() (ThreadList, error) {
 	var data ThreadList
 	threads, err := fs.tRepo.FindAll()
 	if err != nil {
-		log.Println("err at FindAll: ", err)
+		err = apperrors.ReadThreadFailed.Wrap(err, "failed to read all threads")
 		return data, err
 	}
 
@@ -46,14 +46,14 @@ func (fs *ForumService) ReadThreadList() (ThreadList, error) {
 		// Get user who wrote this thread.
 		user, err := fs.uRepo.FindById(thread.UserId)
 		if err != nil {
-			log.Println("err at FindById: ", err)
+			err = apperrors.NoUserFound.Wrap(err, "failed to found user by id")
 			return data, err
 		}
 
 		// Get post number that is replied on this thread.
 		replies, err := fs.tRepo.CountPostNum(thread.Id)
 		if err != nil {
-			log.Println("err at CountPostNum: ", err)
+			err = apperrors.CountRepliesFailed.Wrap(err, "fail to count replies on thread")
 			return data, err
 		}
 
@@ -79,6 +79,7 @@ func (fs *ForumService) ReadThreadList() (ThreadList, error) {
 func (fs *ForumService) CreateThread(userId int, topic string) error {
 	user, err := fs.uRepo.FindById(userId)
 	if err != nil {
+		err = apperrors.NoUserFound.Wrap(err, "failed to found user by id")
 		return err
 	}
 
@@ -89,6 +90,7 @@ func (fs *ForumService) CreateThread(userId int, topic string) error {
 		CreatedAt: time.Now(),
 	}
 	if err := fs.tRepo.Save(thread); err != nil {
+		err = apperrors.CreateThreadFailed.Wrap(err, "failed to save thread data")
 		return err
 	}
 	return nil
@@ -97,11 +99,13 @@ func (fs *ForumService) CreateThread(userId int, topic string) error {
 func (fs *ForumService) CreatePost(userId int, body string, threadUuid string) error {
 	user, err := fs.uRepo.FindById(userId)
 	if err != nil {
+		err = apperrors.NoUserFound.Wrap(err, "failed to found user by id")
 		return err
 	}
 
 	thread, err := fs.tRepo.FindByUuid(threadUuid)
 	if err != nil {
+		err = apperrors.ReadThreadFailed.Wrap(err, "failed to read thread by uuid")
 		return err
 	}
 
@@ -113,6 +117,7 @@ func (fs *ForumService) CreatePost(userId int, body string, threadUuid string) e
 		CreatedAt: time.Now(),
 	}
 	if err := fs.pRepo.Save(post); err != nil {
+		apperrors.CreatePostFailed.Wrap(err, "failed to save post data")
 		return err
 	}
 	return nil
@@ -136,19 +141,19 @@ func (fs *ForumService) ReadThreadDetail(uuid string) (ThreadDetail, error) {
 
 	thread, err := fs.tRepo.FindByUuid(uuid)
 	if err != nil {
-		log.Println("err at FindByUuid", err)
+		err = apperrors.ReadThreadFailed.Wrap(err, "failed to read thread by uuid")
 		return data, err
 	}
 
 	user, err := fs.uRepo.FindById(thread.UserId)
 	if err != nil {
-		log.Println("err at FindById", err)
+		err = apperrors.NoUserFound.Wrap(err, "failed to get user by id")
 		return data, err
 	}
 
 	posts, err := fs.pRepo.FindByThreadId(thread.Id)
 	if err != nil {
-		log.Println("err at FindByThreadId", err)
+		err = apperrors.ReadPostFailed.Wrap(err, "failed to read post by thread_id")
 		return data, err
 	}
 	data.Posts = make([]struct {
@@ -166,7 +171,7 @@ func (fs *ForumService) ReadThreadDetail(uuid string) (ThreadDetail, error) {
 	for i, post := range posts {
 		user, err := fs.uRepo.FindById(post.UserId)
 		if err != nil {
-			log.Println("err at FindById(user)", err)
+			err = apperrors.NoUserFound.Wrap(err, "failed to get user by post")
 			return data, err
 		}
 
