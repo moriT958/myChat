@@ -1,9 +1,10 @@
 package service
 
 import (
-	"log"
+	"errors"
 	"myChat/internal/domain/model"
 	"myChat/internal/domain/repository"
+	"myChat/pkg/apperrors"
 	"myChat/pkg/utils"
 	"time"
 )
@@ -27,7 +28,7 @@ func (as *AuthService) CheckSession(uuid string) (model.Session, error) {
 	// if session doesnt exits in database.
 	session, err := as.sRepo.FindByUuid(uuid)
 	if (err != nil || session == model.Session{}) {
-		log.Println("auth failed, cannot get user session", err)
+		err = apperrors.NoSessionFound.Wrap(err, "failed to get user session")
 		return model.Session{}, err
 	}
 
@@ -37,8 +38,10 @@ func (as *AuthService) CheckSession(uuid string) (model.Session, error) {
 func (as *AuthService) Login(email string, password string) (string, error) {
 	user, err := as.uRepo.FindByEmail(email)
 	if err != nil {
+		err = apperrors.NoUserFound.Wrap(err, "failed to get user by email")
 		return "", err
 	}
+
 	if user.Password == utils.Encrypt(password) {
 		session := model.Session{
 			Uuid:      utils.CreateUUID(),
@@ -47,11 +50,15 @@ func (as *AuthService) Login(email string, password string) (string, error) {
 			CreatedAt: time.Now(),
 		}
 		if err := as.sRepo.Save(session); err != nil {
+			err = apperrors.CreateSessionFailed.Wrap(err, "failed to save session")
 			return "", err
 		}
 		return session.Uuid, nil
+	} else {
+		err := errors.New("failed to login")
+		err = apperrors.CreateSessionFailed.Wrap(err, "password does't match")
+		return "", err
 	}
-	return "", err
 }
 
 func (as *AuthService) CreateUser(name string, email string, password string) error {
@@ -62,19 +69,26 @@ func (as *AuthService) CreateUser(name string, email string, password string) er
 		Password:  utils.Encrypt(password),
 		CreatedAt: time.Now(),
 	}
+
 	if err := as.uRepo.Save(user); err != nil {
+		err = apperrors.CreateUserFailed.Wrap(err, "failed to save user data")
 		return err
 	}
+
 	return nil
 }
 
 func (as *AuthService) Logout(uuid string) error {
 	session, err := as.sRepo.FindByUuid(uuid)
 	if err != nil {
+		err = apperrors.NoSessionFound.Wrap(err, "no session found by uuid")
 		return err
 	}
+
 	if err := as.sRepo.DeleteByUserId(session.UserId); err != nil {
+		err = apperrors.DeleteSessionFailed.Wrap(err, "failed to delete session by user_id")
 		return err
 	}
+
 	return nil
 }

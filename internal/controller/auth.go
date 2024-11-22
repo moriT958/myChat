@@ -2,14 +2,19 @@ package controller
 
 import (
 	"log"
+	"myChat/pkg/apperrors"
 	"myChat/pkg/utils"
 	"net/http"
 )
 
 // GET /signup
 // Show the signup page
-func (ctlr *Controller) SignupFormHandler(w http.ResponseWriter, _ *http.Request) {
-	utils.RenderHTML(w, nil, "login.layout", "public.navbar", "signup")
+func (ctlr *Controller) SignupFormHandler(w http.ResponseWriter, r *http.Request) {
+	err := utils.RenderHTML(w, nil, "login.layout", "public.navbar", "signup")
+	if err != nil {
+		err = apperrors.RenderHTMLFailed.Wrap(err, "failed render html")
+		apperrors.ErrorHandler(w, r, err)
+	}
 }
 
 // POST /signup_account
